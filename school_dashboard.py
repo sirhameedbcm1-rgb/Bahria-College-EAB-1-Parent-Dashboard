@@ -4,7 +4,7 @@ import streamlit as st
 # ====================== DATA LOAD ======================
 @st.cache_data
 def load_data():
-    df = pd.read_excel("Final Secy PNET Meeting List.xlsx", sheet_name="Sheet1")
+    df = pd.read_excel("data.xlsx", sheet_name="Sheet1")
     return df
 
 df = load_data()
