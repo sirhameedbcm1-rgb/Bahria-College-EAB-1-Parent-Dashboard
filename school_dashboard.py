@@ -11,24 +11,15 @@ st.write(os.listdir("."))
 
 # Load Data with multiple attempts
 @st.cache_data
+@st.cache_data
 def load_data():
-    files_to_try = ["data.xlsx", "data.xls", "Final Secy PNET Meeting List.xlsx", "students.xlsx"]
-    for f in files_to_try:
-        if os.path.exists(f):
-            try:
-                df = pd.read_excel(f, sheet_name="Sheet1")
-                st.success(f"✅ Successfully loaded: **{f}**")
-                return df
-            except Exception as e:
-                st.warning(f"Failed with {f}: {e}")
-    st.error("❌ No Excel file found. Please check file name.")
-    return pd.DataFrame()
-
-df = load_data()
-
-if df.empty:
-    st.stop()
-
+    try:
+        df = pd.read_csv("data.csv")
+        st.success("✅ data.csv loaded successfully!")
+        return df
+    except Exception as e:
+        st.error(f"CSV Load Error: {e}")
+        return pd.DataFrame()
 # Rest of your code (grouping etc.)
 df["Father's Name"] = df["Father's Name"].astype(str).str.strip()
 
