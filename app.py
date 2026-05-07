@@ -3,6 +3,7 @@ import pandas as pd
 
 st.set_page_config(page_title="Bahria College EAB-1", layout="wide")
 
+# Theme
 st.markdown("""
     <style>
     .stApp { background-color: #E6F0FF; color: #003366; }
@@ -12,11 +13,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Header
 st.title("Bahria College EAB-1 Parents Dashboard")
 st.subheader("Principal Ma'am Sabiha Haider")
 st.markdown("**Powered by HOD Computer Department BC EAB-1**")
 st.markdown("---")
 
+# Data Load
 @st.cache_data(ttl=300)
 def load_data():
     df = pd.read_csv("data.csv")
@@ -25,9 +28,10 @@ def load_data():
 
 df = load_data()
 
-# Best Unique Parent ID
+# Unique Parent ID (Father's Name + Mobile)
 df['Parent_ID'] = df["Father's Name"].astype(str).str.strip() + " | " + df["Mobile No"].astype(str).str.strip()
 
+# Summary
 total_students = len(df)
 total_parents = df['Parent_ID'].nunique()
 
@@ -40,8 +44,10 @@ with c4: st.metric("Classes", df["New Class"].nunique() if "New Class" in df.col
 st.markdown("---")
 st.subheader(f"Parents List ({total_parents} Unique Parents)")
 
+# Search
 search = st.text_input("🔍 Search Parent Name", "")
 
+# Grouping
 parent_group = df.groupby('Parent_ID').agg(
     Father_Name=("Father's Name", "first"),
     No_of_Children=("S.No", "count"),
@@ -57,15 +63,18 @@ if search:
 else:
     filtered = parent_group
 
+# ================== MAIN DISPLAY WITH PHONE IN TITLE ==================
 for _, parent in filtered.iterrows():
-    with st.expander(f"👨‍👧‍👦 **{parent['Father_Name']}** — {parent['No_of_Children']} Children", expanded=False):
+    with st.expander(f"👨‍👧‍👦 **{parent['Father_Name']}** | 📱 {parent['Mobile']} — {parent['No_of_Children']} Children", expanded=False):
         st.write(f"**Mobile:** {parent['Mobile']}")
         st.write(f"**Children:** {parent['Children']}")
         st.write(f"**Classes:** {parent['Classes']}")
         
         children_df = df[df['Parent_ID'] == parent['Parent_ID']]
-        st.dataframe(children_df.drop(columns=['Parent_ID'], errors='ignore'), use_container_width=True, hide_index=True)
+        st.dataframe(children_df.drop(columns=['Parent_ID'], errors='ignore'), 
+                    use_container_width=True, hide_index=True)
 
+# Footer
 st.markdown("---")
 st.markdown("**Powered by HOD Computer Department BC EAB-1**")
 st.caption("© Bahria College EAB-1 | All Rights Reserved")
