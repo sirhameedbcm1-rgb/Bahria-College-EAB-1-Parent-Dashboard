@@ -6,17 +6,21 @@ st.set_page_config(page_title="Parent Student Dashboard", layout="wide")
 st.title("Parent Student Dashboard")
 
 # ========================= DATA LOAD =========================
-@st.cache_data
+@st.cache_data(ttl=300)
 def load_data():
-    df = pd.read_csv("data.csv")      # agar excel hai to pd.read_excel("data.xlsx")
+    df = pd.read_csv("data.csv")
     df = df.fillna("")
     return df
 
 df = load_data()
 
+# ========================= UNIQUE PARENT ID =========================
+# Important: Unique banane ke liye Fee # + Father's Name use kar rahe hain
+df['Parent_ID'] = df['Fee #'].astype(str) + " - " + df["Father's Name"].astype(str)
+
 # ========================= SUMMARY =========================
 total_students = len(df)
-total_parents = df["Father's Name"].nunique()
+total_parents = df['Parent_ID'].nunique()
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -30,39 +34,41 @@ with col4:
 
 st.markdown("---")
 
-# ========================= PARENT WISE GROUPING =========================
-# Group by Father
-parent_group = df.groupby("Father's Name").agg(
+# ========================= PARENT GROUPING =========================
+parent_group = df.groupby('Parent_ID').agg(
+    Father_Name=('Father\'s Name', 'first'),
     No_of_Children=('S.No', 'count'),
     Children=('Name', lambda x: ", ".join(x)),
-    Classes=('New Class', lambda x: ", ".join(x)),
-    Max_Class=('New Class', 'max'),   # Senior class ke liye
-    Mobile=('Mobile No', 'first')
+    Classes=('New Class', lambda x: ", ".join(sorted(x))),
+    Mobile=('Mobile No', 'first'),
+    Fee_Number=('Fee #', 'first')
 ).reset_index()
 
-# Better Sorting: Zyada bachay + Senior classes ko priority
-# Simple sorting for now (aap chahein to aur advanced bhi kar sakte hain)
+# Sort by number of children (zyada bachay wale top pe)
 parent_group = parent_group.sort_values(by='No_of_Children', ascending=False)
 
-st.subheader(f"Parents List ({len(parent_group)} Parents)")
+st.subheader(f"Parents List ({len(parent_group)} Unique Parents)")
 
 # Search
 search = st.text_input("🔍 Search Parent Name", "")
 
 if search:
-    filtered = parent_group[parent_group["Father's Name"].str.contains(search, case=False)]
+    filtered = parent_group[parent_group["Father_Name"].str.contains(search, case=False)]
 else:
     filtered = parent_group
 
-# Display Parents in Expandable Format
+# Display Parents
 for _, parent in filtered.iterrows():
-    with st.expander(f"👨‍👧‍👦 **{parent['Father\'s Name']}**  —  {parent['No_of_Children']} Children", expanded=False):
+    with st.expander(f"👨‍👧‍👦 **{parent['Father_Name']}**  —  {parent['No_of_Children']} Children | Fee #: {parent['Fee_Number']}", expanded=False):
         st.write(f"**Mobile:** {parent['Mobile']}")
         st.write(f"**Children:** {parent['Children']}")
         st.write(f"**Classes:** {parent['Classes']}")
         
-        # Show detailed table of this parent's children
-        children_df = df[df["Father's Name"] == parent["Father's Name"]]
-        st.dataframe(children_df, use_container_width=True, hide_index=True)
+        # Detailed table
+        children_df = df[df['Parent_ID'] == parent['Parent_ID']]
+        st.dataframe(children_df.drop(columns=['Parent_ID']), use_container_width=True, hide_index=True)
 
-st.caption("Note: Parents with more children are shown on top.")
+# ========================= FOOTER =========================
+st.markdown("---")
+st.markdown("**Powered by HOD Computer Department BC EAB-1**")
+st.caption("© Bahria College EAB-1 | Parent Student Dashboard")
