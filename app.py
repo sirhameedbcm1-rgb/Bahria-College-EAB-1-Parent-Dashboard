@@ -42,7 +42,7 @@ def load_data():
 
 df = load_data()
 
-# ================== S.No AS PARENT UNIQUE ID ==================
+# ================== S.No KO PARENT UNIQUE ID BANA DIYA ==================
 df['Parent_ID'] = df['S.No'].astype(str).str.strip()
 
 # ========================= SUMMARY =========================
@@ -64,9 +64,9 @@ st.markdown("---")
 st.subheader(f"Parents List ({total_parents} Unique Parents)")
 
 # Search
-search = st.text_input("🔍 Search Parent Name", "")
+search = st.text_input("🔍 Search by Father's Name", "")
 
-# Grouping
+# Grouping by S.No (aapki final marzi)
 parent_group = df.groupby('Parent_ID').agg(
     Father_Name=("Father's Name", "first"),
     No_of_Children=("S.No", "count"),
@@ -85,7 +85,7 @@ else:
 # Display
 for _, parent in filtered.iterrows():
     with st.expander(f"👨‍👧‍👦 **{parent['Father_Name']}** — {parent['No_of_Children']} Children", expanded=False):
-        st.write(f"**Mobile:** {parent.get('Mobile', 'N/A')}")
+        st.write(f"**Mobile:** {parent['Mobile']}")
         st.write(f"**Children:** {parent['Children']}")
         st.write(f"**Classes:** {parent['Classes']}")
         
