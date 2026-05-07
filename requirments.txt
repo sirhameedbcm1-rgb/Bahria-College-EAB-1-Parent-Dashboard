@@ -1,3 +1,6 @@
 streamlit
+# yahan apne baqi packages likho, misaal:
 pandas
-openpyxl
+numpy
+plotly
+matplotlib
