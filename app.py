@@ -24,11 +24,6 @@ st.markdown("""
         border: 1px solid #003366;
         border-radius: 10px;
     }
-    /* Better Scrolling */
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -47,8 +42,8 @@ def load_data():
 
 df = load_data()
 
-# ================== BEST UNIQUE PARENT ID (Father's Name + Mobile) ==================
-df['Parent_ID'] = df["Father's Name"].astype(str) + " - " + df["Mobile No"].astype(str)
+# ================== UNIQUE PARENT ID (Best Method) ==================
+df['Parent_ID'] = df["Father's Name"].astype(str).str.strip() + "___" + df["Mobile No"].astype(str).str.strip()
 
 # ========================= SUMMARY =========================
 total_students = len(df)
@@ -66,18 +61,20 @@ with c4:
 
 st.markdown("---")
 
-# ========================= PARENT GROUPING =========================
-parent_group = df.groupby('Parent_ID').agg(
-    Father_Name=("Father's Name", "first"),
-    No_of_Children=("S.No", "count"),
-    Children=("Name", lambda x: ", ".join(x)),
-    Classes=("New Class", lambda x: ", ".join(sorted(x))),
-    Mobile=("Mobile No", "first"),
-    Fee_Number=("Fee #", "first") if "Fee #" in df.columns else None
-).reset_index()
+# ========================= SAFE PARENT GROUPING =========================
+agg_dict = {
+    "Father_Name": ("Father's Name", "first"),
+    "No_of_Children": ("S.No", "count"),
+    "Children": ("Name", lambda x: ", ".join(x)),
+    "Classes": ("New Class", lambda x: ", ".join(sorted(x))),
+    "Mobile": ("Mobile No", "first")
+}
 
-# Remove None columns
-parent_group = parent_group.dropna(axis=1, how='all')
+# Fee # safe add karo
+if "Fee #" in df.columns:
+    agg_dict["Fee_Number"] = ("Fee #", "first")
+
+parent_group = df.groupby('Parent_ID').agg(**agg_dict).reset_index()
 
 parent_group = parent_group.sort_values(by="No_of_Children", ascending=False)
 
@@ -91,11 +88,11 @@ if search:
 else:
     filtered = parent_group
 
-# Display Parents + Children
+# Display
 for _, parent in filtered.iterrows():
     with st.expander(f"👨‍👧‍👦 **{parent['Father_Name']}** — {parent['No_of_Children']} Children", expanded=False):
         st.write(f"**Mobile:** {parent['Mobile']}")
-        if 'Fee_Number' in parent:
+        if "Fee_Number" in parent:
             st.write(f"**Fee #:** {parent['Fee_Number']}")
         st.write(f"**Children:** {parent['Children']}")
         st.write(f"**Classes:** {parent['Classes']}")
