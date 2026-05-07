@@ -15,7 +15,7 @@ st.markdown("""
 
 # Header
 st.title("Bahria College EAB-1 Parents Dashboard")
-st.subheader("Principal Ma'am Sabiha Haider")
+st.subheader("Principal Syeda Sabiha Haider")
 st.markdown("**Powered by HOD Computer Department BC EAB-1**")
 st.markdown("---")
 
