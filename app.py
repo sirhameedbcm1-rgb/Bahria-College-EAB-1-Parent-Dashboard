@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
 
-# Page Configuration + Navy Blue Theme
 st.set_page_config(page_title="Bahria College EAB-1", layout="wide")
 
-# Custom CSS for Navy Blue Background
+# ================== NAVY BLUE THEME ==================
 st.markdown("""
     <style>
     .stApp {
@@ -13,27 +12,28 @@ st.markdown("""
     }
     .stMetric {
         background-color: #003366;
-        padding: 10px;
+        padding: 15px;
         border-radius: 10px;
     }
-    h1, h2, h3 {
-        color: #FFFFFF !important;
+    h1, h2, h3, .stMarkdown {
+        color: white !important;
     }
     .stExpander {
         background-color: #003366;
+        border: 1px solid #ffffff33;
         border-radius: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Header with Logo
-col1, col2 = st.columns([1, 4])
+# ================== HEADER ==================
+col1, col2 = st.columns([1, 5])
 with col1:
-    st.image("https://seeklogo.com/images/P/pakistan-navy-logo-0B0B0B0B0B-seeklogo.com.png", width=120)
+    st.image("https://seeklogo.com/images/P/pakistan-navy-logo-0B0B0B0B0B-seeklogo.com.png", width=110)
 
 with col2:
     st.title("Bahria College EAB-1 Parents Dashboard")
-    st.markdown("**Principal Ma'am Sabiha Haider**")
+    st.subheader("Principal Ma'am Sabiha Haider")
 
 st.markdown("---")
 
@@ -46,8 +46,14 @@ def load_data():
 
 df = load_data()
 
-# ====================== UNIQUE PARENT USING MOBILE ======================
-df['Parent_ID'] = df['Mobile No'].astype(str) + " - " + df["Father's Name"].astype(str)
+# Safe Column Name Handling
+father_col = "Father's Name"
+mobile_col = "Mobile No"
+fee_col = "Fee #"
+class_col = "New Class"
+
+# Create Unique Parent ID using Mobile Number
+df['Parent_ID'] = df[mobile_col].astype(str) + " - " + df[father_col].astype(str)
 
 # ========================= SUMMARY =========================
 total_students = len(df)
@@ -61,18 +67,18 @@ with col2:
 with col3:
     st.metric("Average Children per Parent", f"{total_students/total_parents:.2f}")
 with col4:
-    st.metric("Classes", df["New Class"].nunique())
+    st.metric("Classes", df[class_col].nunique())
 
 st.markdown("---")
 
 # ========================= PARENT GROUPING =========================
 parent_group = df.groupby('Parent_ID').agg(
-    Father_Name=("Father's Name", 'first'),
+    Father_Name=(father_col, 'first'),
     No_of_Children=('S.No', 'count'),
     Children=('Name', lambda x: ", ".join(x)),
-    Classes=('New Class', lambda x: ", ".join(sorted(x))),
-    Mobile=('Mobile No', 'first'),
-    Fee_Number=('Fee #', 'first')
+    Classes=(class_col, lambda x: ", ".join(sorted(x))),
+    Mobile=(mobile_col, 'first'),
+    Fee_Number=(fee_col, 'first')
 ).reset_index()
 
 parent_group = parent_group.sort_values(by='No_of_Children', ascending=False)
@@ -87,9 +93,9 @@ if search:
 else:
     filtered = parent_group
 
-# Display Parents with Expandable Children
+# Display
 for _, parent in filtered.iterrows():
-    with st.expander(f"👨‍👧‍👦 **{parent['Father_Name']}**  —  {parent['No_of_Children']} Children | Mobile: {parent['Mobile']}", expanded=False):
+    with st.expander(f"👨‍👧‍👦 **{parent['Father_Name']}** — {parent['No_of_Children']} Children | Mobile: {parent['Mobile']}", expanded=False):
         st.write(f"**Mobile:** {parent['Mobile']}")
         st.write(f"**Fee #:** {parent['Fee_Number']}")
         st.write(f"**Children:** {parent['Children']}")
@@ -99,7 +105,7 @@ for _, parent in filtered.iterrows():
         st.dataframe(children_df.drop(columns=['Parent_ID'], errors='ignore'), 
                     use_container_width=True, hide_index=True)
 
-# ========================= HEADER & FOOTER =========================
+# ================== FOOTER ==================
 st.markdown("---")
 st.markdown("**Powered by HOD Computer Department BC EAB-1**")
-st.caption("© Bahria College EAB-1 | All Rights Reserved | 2026")
+st.caption("© Bahria College EAB-1 | All Rights Reserved")
