@@ -47,7 +47,7 @@ df['Parent_ID'] = df['S.No'].astype(str) + " - " + df["Father's Name"].astype(st
 
 # ========================= SUMMARY =========================
 total_students = len(df)
-total_parents = df['Parent_ID'].nunique()
+total_parents = df['Parent_ID']
 
 c1, c2, c3, c4 = st.columns(4)
 with c1:
