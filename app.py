@@ -3,7 +3,7 @@ import pandas as pd
 
 st.set_page_config(page_title="Bahria College EAB-1", layout="wide")
 
-# ================== LIGHT BLUE THEME ==================
+# Theme
 st.markdown("""
     <style>
     .stApp {
@@ -27,13 +27,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ================== HEADER ==================
+# Header
 st.title("Bahria College EAB-1 Parents Dashboard")
 st.subheader("Principal Ma'am Sabiha Haider")
 st.markdown("**Powered by HOD Computer Department BC EAB-1**")
 st.markdown("---")
 
-# ========================= DATA LOAD =========================
+# Data Load
 @st.cache_data(ttl=300)
 def load_data():
     df = pd.read_csv("data.csv")
@@ -42,7 +42,7 @@ def load_data():
 
 df = load_data()
 
-# ================== S.No KO PARENT UNIQUE ID BANA DIYA ==================
+# ================== S.No AS PARENT UNIQUE ID ==================
 df['Parent_ID'] = df['S.No'].astype(str).str.strip()
 
 # ========================= SUMMARY =========================
@@ -66,14 +66,13 @@ st.subheader(f"Parents List ({total_parents} Unique Parents)")
 # Search
 search = st.text_input("🔍 Search Parent Name", "")
 
-# Grouping by S.No (aapki marzi)
+# Grouping
 parent_group = df.groupby('Parent_ID').agg(
     Father_Name=("Father's Name", "first"),
     No_of_Children=("S.No", "count"),
     Children=("Name", lambda x: ", ".join(x)),
     Classes=("New Class", lambda x: ", ".join(sorted(x))),
-    Mobile=("Mobile No", "first"),
-    Fee_Number=("Fee #", "first") if "Fee #" in df.columns else None
+    Mobile=("Mobile No", "first")
 ).reset_index()
 
 parent_group = parent_group.sort_values(by="No_of_Children", ascending=False)
@@ -86,9 +85,7 @@ else:
 # Display
 for _, parent in filtered.iterrows():
     with st.expander(f"👨‍👧‍👦 **{parent['Father_Name']}** — {parent['No_of_Children']} Children", expanded=False):
-        st.write(f"**Mobile:** {parent['Mobile']}")
-        if "Fee_Number" in parent and parent["Fee_Number"]:
-            st.write(f"**Fee #:** {parent['Fee_Number']}")
+        st.write(f"**Mobile:** {parent.get('Mobile', 'N/A')}")
         st.write(f"**Children:** {parent['Children']}")
         st.write(f"**Classes:** {parent['Classes']}")
         
